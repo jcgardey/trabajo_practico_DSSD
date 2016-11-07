@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %} 
+
+{% block title %}
+	Ingresar Nuevo Trabajo
+{% endblock %}
+
+{% block body %}
+	<div class="container">
+		<h2 class="text-center">Ingresar un Nuevo Trabajo</h2>
+		<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				{{ form_start(form) }}
+					<div class="form-group">
+						{{ form_label(form.title,'Titulo del Trabajo') }}
+						{{ form_widget(form.title, {'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.title) }}
+					</div>
+					<div class="form-group" >
+						{{ form_label(form.secondaryAuthors, 'Autores Secundarios') }}
+						<ul class="form-group" id="authors-list" data-prototype="{% filter escape %} {{ include('::prototype.html.twig', { 'form': form.secondaryAuthors.vars.prototype}) }}{% endfilter %}">
+
+							{% for authorField in form.secondaryAuthors %}
+								{{ form_widget(authorField) }}
+								{{ form_errors(authorField) }}
+							{% endfor %}
+
+						</ul>
+						<a href="#" id="add-author">Agregar Autor</a>
+					</div>
+					<div class="form-group">
+						{{ form_label(form.author,'Autor') }}
+						{{ form_widget(form.author, {'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.author) }}
+					</div>
+					<div class="form-group">
+						{{ form_label(form.summary,'Resumen del Trabajo') }}
+						{{ form_widget(form.summary,{'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.summary) }}
+					</div>
+					<div class="form-group">
+						{{ form_label(form.theme,'Tema del Trabajo') }}
+						{{ form_widget(form.theme,{'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.theme) }}
+					</div>
+					<div class="form-group">
+						{{ form_label(form.email,'Correo Personal') }}
+						{{ form_widget(form.email,{'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.email) }}
+					</div>
+					<div class="form-group">
+						{{ form_label(form.gmail,'Correo de Gmail') }}
+						{{ form_widget(form.gmail,{'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.gmail) }}
+					</div>
+					<div class="form-group">
+						{{ form_label(form.presentationType,'Tipo de Presentacion') }}
+						{{ form_widget(form.presentationType,{'attr': {'class': 'form-control'} }) }}
+						{{ form_errors(form.presentationType) }}
+					</div>
+					<div class="form-group">
+						{{ form_widget(form.enviar,{'attr': {'class': 'btn btn-danger'} }) }}
+					</div>
+				{{ form_end(form) }}
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+			$(document).ready(function () {
+				var count = {{ form.secondaryAuthors | length }};
+			
+				function addAuthor() {
+					var prototype = $("#authors-list").attr('data-prototype');
+					var newAuthor = prototype.replace(/__name__/g,count);
+					var newLi = jQuery('<li></li>').html(newAuthor);
+					count++;
+
+					$("#authors-list").append(newLi);
+				}
+
+				$("#add-author").click(function () {
+					addAuthor();
+				});
+
+				
+			});
+	</script>
+{% endblock %}
