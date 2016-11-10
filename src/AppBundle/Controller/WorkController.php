@@ -56,17 +56,26 @@ class WorkController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
 
             $aWork->setState('PENDING');
+            $aWork->setDocumentFinished(false);
+
+            $worksNumber = $this->getDoctrine()->getRepository('AppBundle:Work')->numberOfWorks();
+
+            $aWork->setNumber($worksNumber + 1);
+            
             $em = $this->getDoctrine()->getManager();
+
             $em->persist($aWork);
             $em->flush();
             $request->getSession()->getFlashBag()->add('estado','El trabajo fue enviado correctamente');
+
+            return $this->render('work/work_sended.html.twig',array('work' => $aWork));
         }
         return $this->render('work/new_work.html.twig',array('form' => $form->createView() ));  
     }
 
     private function createFile ($drive_service, $aWork) {
         $driveFile = new \Google_Service_Drive_DriveFile();
-        $driveFile->setName($aWork->getTitle().'_'.$aWork->getAuthor().'.doc');
+        $driveFile->setName($aWork->getTitle().'_'.$aWork->getNumber().'.doc');
         $driveFile->setMimeType('application/vnd.google-apps.document');
         $createdFile = $drive_service->files->create($driveFile, array('mimeType' => 'application/vnd.google-apps.document'));
 
@@ -89,38 +98,65 @@ class WorkController extends Controller
      * @Route("/crear_archivo/{id}", name="crear_archivo")
      */
     public function crearArchivoDeTrabajoAction (Request $request, Work $aWork) {
-        $client = $this->getClient();
-                   
-        $this->loadToken($client);
+        //Se debe crear el documento solo si el trabajo no posee uno creado ya.
+        if (!$aWork->getDocumentId()) {
+            $client = $this->getClient();          
+        
+            $this->loadToken($client);
+        
+            $drive_service = new \Google_Service_Drive($client);
+            $createdFile = $this->createFile($drive_service, $aWork);
 
-        $drive_service = new \Google_Service_Drive($client);
-        $createdFile = $this->createFile($drive_service, $aWork);
-           
-        $link_to_file = $this->getFileLink($drive_service, $createdFile->getId());
-        $link_to_end_edit = $this->generateUrl('end_edit',array('file_id' => $createdFile->getId() ),UrlGeneratorInterface::ABSOLUTE_URL);
+            $aWork->setDocumentId( $createdFile->getId() );
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($aWork);
+            $em->flush();
 
+            $link_to_file = $this->getFileLink($drive_service, $createdFile->getId());
+            $link_to_end_edit = $this->generateUrl('end_edit',array('id' => $aWork->getId() ),UrlGeneratorInterface::ABSOLUTE_URL);
+        
+            $responseData = array('file_link' => $link_to_file, 'link_to_end_edit' => $link_to_end_edit);
+        }
+        else {
+            $responseData = array('error' => 'This Work Already has a Document');
+        }       
+        
         $response = new JsonResponse();
-        $response->setData(array('file_link' => $link_to_file, 'link_to_end_edit' => $link_to_end_edit));
+        $response->setEncodingOptions(JSON_UNESCAPED_SLASHES);
+        $response->setData($responseData);
         return $response;
        
       
     }
 
     /**
-     * @Route("/end_edit/{file_id}", name="end_edit")
+     * @Route("/end_edit/{id}", name="end_edit")
      */
-    public function endEditAction ($file_id) {
+    public function endEditAction (Request $request, Work $aWork) {
         $client = $this->getClient();
         $this->loadToken($client);
         $drive_service = new \Google_Service_Drive($client);
+
+        $file_id = $aWork->getDocumentId();
+
+        if (!$file_id) {
+            throw $this->createNotFoundException('Work not has a Document Associated');
+            
+        }
         $permissions = $drive_service->permissions->listPermissions($file_id,array('fields' => 'permissions'))->getPermissions();
         foreach ($permissions as $permission) {
             if ($permission->getRole() == 'writer') {
                 $drive_service->permissions->delete($file_id,$permission->getId() );
             } 
         }
+
+        $aWork->setDocumentFinished(true);
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($aWork);
+        $em->flush();
+
         $response = new JsonResponse();
-        $response->setData('finalizo la edicion del archivo');
+        $response->setData('Document of Work has been Finished');
         return $response;
     }
 

@@ -86,6 +86,24 @@ class Work
      */
     private $state;
 
+    /**
+     *
+     * @ORM\Column(name="documentId", type="string", length=255, nullable=true)
+     */
+    private $documentId;
+
+    /**
+     *
+     * @ORM\Column(name="documentFinished", type="boolean")
+     */
+    private $documentFinished;
+
+    /**
+     *
+     * @ORM\Column(name="number", type="integer", nullable=false)
+     */
+    private $number;
+
      /** 
       *
       * @ORM\OneToMany(targetEntity="Author", mappedBy="work", cascade={"persist"})
@@ -340,5 +358,29 @@ class Work
     public function getSecondaryAuthors()
     {
         return $this->secondaryAuthors;
+    }
+
+    /**
+     * Set exposition
+     *
+     * @param \AppBundle\Entity\Exposition $exposition
+     *
+     * @return Work
+     */
+    public function setExposition(\AppBundle\Entity\Exposition $exposition = null)
+    {
+        $this->exposition = $exposition;
+
+        return $this;
+    }
+
+    /**
+     * Get exposition
+     *
+     * @return \AppBundle\Entity\Exposition
+     */
+    public function getExposition()
+    {
+        return $this->exposition;
     }
 }

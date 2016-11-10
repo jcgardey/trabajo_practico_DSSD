@@ -10,4 +10,9 @@ namespace AppBundle\Repository;
  */
 class WorkRepository extends \Doctrine\ORM\EntityRepository
 {
+
+	public function numberOfWorks() {
+		$works = $this->findAll();
+		return count($works);
+	}
 }

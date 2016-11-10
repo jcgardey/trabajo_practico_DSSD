@@ -86,6 +86,24 @@ class Work
      */
     private $state;
 
+    /**
+     *
+     * @ORM\Column(name="documentId", type="string", length=255, nullable=true)
+     */
+    private $documentId;
+
+    /**
+     *
+     * @ORM\Column(name="documentFinished", type="boolean")
+     */
+    private $documentFinished;
+
+    /**
+     *
+     * @ORM\Column(name="number", type="integer", nullable=false)
+     */
+    private $number;
+
      /** 
       *
       * @ORM\OneToMany(targetEntity="Author", mappedBy="work", cascade={"persist"})
@@ -364,5 +382,77 @@ class Work
     public function getExposition()
     {
         return $this->exposition;
+    }
+
+    /**
+     * Set documentId
+     *
+     * @param string $documentId
+     *
+     * @return Work
+     */
+    public function setDocumentId($documentId)
+    {
+        $this->documentId = $documentId;
+
+        return $this;
+    }
+
+    /**
+     * Get documentId
+     *
+     * @return string
+     */
+    public function getDocumentId()
+    {
+        return $this->documentId;
+    }
+
+    /**
+     * Set documentFinished
+     *
+     * @param boolean $documentFinished
+     *
+     * @return Work
+     */
+    public function setDocumentFinished($documentFinished)
+    {
+        $this->documentFinished = $documentFinished;
+
+        return $this;
+    }
+
+    /**
+     * Get documentFinished
+     *
+     * @return boolean
+     */
+    public function getDocumentFinished()
+    {
+        return $this->documentFinished;
+    }
+
+    /**
+     * Set number
+     *
+     * @param integer $number
+     *
+     * @return Work
+     */
+    public function setNumber($number)
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
+    /**
+     * Get number
+     *
+     * @return integer
+     */
+    public function getNumber()
+    {
+        return $this->number;
     }
 }

@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Trabajo Enviado{% endblock %}
+
+{% block body %}
+	<div class="container">
+		<h2 class="text-center">Trabajo Enviado</h2>
+		<div class="row">
+			<p class="text-justify">El trabajo <strong>{{ work.title }}</strong> ha sido enviado. Ser&aacute; evaluado por un Comit&eacute; Cient&iacute;fico y luego recibir&aacute; el resultado por correo electr&oacute;nico</p>
+		</div>
+		<div class="row">
+			<a class="btn btn-danger text-center" href="{{ url('registrar_trabajo') }}">Inscribir otro Trabajo</a>
+		</div>
+	</div>
+{% endblock %}
