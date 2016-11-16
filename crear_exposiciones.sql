@@ -1,0 +1,32 @@
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 09:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 09:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 10:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 10:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 11:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 11:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 12:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 12:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 13:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 1', '2016-11-24 13:30', true);
+
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 09:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 09:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 10:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 10:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 11:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 11:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 12:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 12:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 13:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 2', '2016-11-24 13:30', true);
+
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 09:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 09:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 10:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 10:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 11:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 11:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 12:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 12:30', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 13:00', true);
+insert into exposition (site, expositionDate, available) values ('Aula 3', '2016-11-24 13:30', true);

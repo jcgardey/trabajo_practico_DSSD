@@ -124,28 +124,5 @@ class Exposition
     {
         return $this->available;
     }
-
-    /**
-     * Set expositionDate
-     *
-     * @param \DateTime $expositionDate
-     *
-     * @return Exposition
-     */
-    public function setExpositionDate($expositionDate)
-    {
-        $this->expositionDate = $expositionDate;
-
-        return $this;
-    }
-
-    /**
-     * Get expositionDate
-     *
-     * @return \DateTime
-     */
-    public function getExpositionDate()
-    {
-        return $this->expositionDate;
-    }
 }
+
