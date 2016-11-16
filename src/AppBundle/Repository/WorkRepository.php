@@ -15,4 +15,10 @@ class WorkRepository extends \Doctrine\ORM\EntityRepository
 		$works = $this->findAll();
 		return count($works);
 	}
+
+	public function findAllApprovedByNumber() {
+		$aQuery = $this->getEntityManager()->createQuery('select w from AppBundle:Work w where w.state = :aState order by w.number asc');
+		$aQuery->setParameter(':aState', 'APPROVED');
+		return $aQuery->getResult();
+	}
 }

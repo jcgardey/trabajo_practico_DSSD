@@ -12,6 +12,8 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+use \Doctrine\Common\Collections\ArrayCollection;
+
 use AppBundle\Entity\Work;
 use AppBundle\Form\WorkType;
 
@@ -109,6 +111,7 @@ class WorkController extends Controller
 
             $aWork->setDocumentId( $createdFile->getId() );
             $em = $this->getDoctrine()->getManager();
+
             $em->persist($aWork);
             $em->flush();
 
@@ -160,6 +163,44 @@ class WorkController extends Controller
         return $response;
     }
 
+
+    /**
+     * @Route("/build_summary", name="build_summary")
+     */
+    public function buildSummaryAction (Request $request) {
+        $aClient = $this->getClient();
+        $this->loadToken($aClient);
+
+        $worksRepository = $this->getDoctrine()->getRepository('AppBundle:Work');
+
+        $worksApprovedNotFinished = $worksRepository->findBy( array('documentFinished' => false, 'state' => 'APPROVED') );
+        $response = new JsonResponse();
+        if ($worksApprovedNotFinished) {
+            $response->setData( array('error' => 'There are works not finished') );
+        }
+        else {
+            $worksApproved = $worksRepository->findAllApprovedByNumber();
+            $pageNumber = 1;
+            $summaryIndex = "";
+            foreach ($worksApproved as $aWork) {
+                $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().".\t\t pagina ".$pageNumber."\n";
+                $pageNumber++;
+            }
+            $aService = new \Google_Service_Drive($aClient);
+            $driveFile = new \Google_Service_Drive_DriveFile();
+            $driveFile->setName('libroCongreso.doc');
+            $driveFile->setMimeType('application/vnd.google-apps.document');
+            $createdFile = $aService->files->create($driveFile, array('data' => $summaryIndex,'mimeType' => 'application/vnd.google-apps.document'));
+        
+
+            $fileLink = $this->getFileLink($aService, $createdFile->getId());
+            $response->setData(array('book_link' => $fileLink));
+        }
+        $response->setEncodingOptions(JSON_UNESCAPED_SLASHES);
+        return $response; 
+
+    } 
+
     /**
      * @Route("/save_token", name="save_token")
      */
@@ -178,4 +219,5 @@ class WorkController extends Controller
         }
         return new Response('Token Creado', Response::HTTP_OK, array('content-type' => 'text/html'));
     }
+
 }
