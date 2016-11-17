@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finalizar Documento{% endblock %}
+
+{% block body %}
+	<div class="container">
+		<h2 class="text-center">Finalizar Documento</h2>
+		{% if work.documentFinished %}
+			<div class="row">
+			<p class="text-justify">El documento del trabajo <strong>{{ work.title }}</strong> ha sido finalizado. Esto significa que
+				ya no podr&aacute; ser editado.</p>
+			</div>
+		{% else %}
+			<p> El trabajo <strong>{{ work.title }}</strong> ha sido rechazado.</p> 
+		{% endif %}	
+	</div>
+{% endblock %}

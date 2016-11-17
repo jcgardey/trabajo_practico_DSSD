@@ -112,7 +112,7 @@ class Work
 
     /**
      * @ORM\OneToOne(targetEntity="Exposition")
-     * @ORM\JoinColumn(name="exposition_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="exposition_id", referencedColumnName="id", nullable=true)
      */
     private $exposition;
 

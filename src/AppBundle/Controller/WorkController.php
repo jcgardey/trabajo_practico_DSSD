@@ -103,8 +103,8 @@ class WorkController extends Controller
      * @Route("/crear_archivo/{id}", name="crear_archivo")
      */
     public function crearArchivoDeTrabajoAction (Request $request, Work $aWork) {
-        //Se debe crear el documento solo si el trabajo no posee uno creado ya.
-        if (!$aWork->getDocumentId()) {
+        //Se debe crear el documento solo si el trabajo esta aprobado y no posee un documento creado ya.
+        if (!$aWork->getDocumentId() && $aWork->getState() == 'APPROVED' ) {
             $client = $this->getClient();          
         
             $this->loadToken($client);
@@ -124,7 +124,7 @@ class WorkController extends Controller
             $responseData = array('file_link' => $link_to_file, 'link_to_end_edit' => $link_to_end_edit);
         }
         else {
-            $responseData = array('error' => 'This Work Already has a Document');
+            $responseData = array('error' => 'This Work has been Rejected or Already has a Document');
         }       
         
         $response = new JsonResponse();
@@ -143,27 +143,20 @@ class WorkController extends Controller
         $this->loadToken($client);
         $drive_service = new \Google_Service_Drive($client);
 
-        $file_id = $aWork->getDocumentId();
+        if ($aWork->getDocumentId() && $aWork->getState() == 'APPROVED' ) {
+            $permissions = $drive_service->permissions->listPermissions($aWork->getDocumentId(),array('fields' => 'permissions'))->getPermissions();
+            foreach ($permissions as $permission) {
+                if ($permission->getRole() == 'writer') {
+                    $drive_service->permissions->delete($aWork->getDocumentId(),$permission->getId() );
+                } 
+            }
 
-        if (!$file_id) {
-            throw $this->createNotFoundException('Work not has a Document Associated');
-            
+            $aWork->setDocumentFinished(true);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($aWork);
+            $em->flush();
         }
-        $permissions = $drive_service->permissions->listPermissions($file_id,array('fields' => 'permissions'))->getPermissions();
-        foreach ($permissions as $permission) {
-            if ($permission->getRole() == 'writer') {
-                $drive_service->permissions->delete($file_id,$permission->getId() );
-            } 
-        }
-
-        $aWork->setDocumentFinished(true);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($aWork);
-        $em->flush();
-
-        $response = new JsonResponse();
-        $response->setData('Document of Work has been Finished');
-        return $response;
+        return $this->render('work/end_edit.html.twig',array('work' => $aWork));
     }
 
 
@@ -186,7 +179,7 @@ class WorkController extends Controller
             $pageNumber = 1;
             $summaryIndex = "";
             foreach ($worksApproved as $aWork) {
-                $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().".\t\t pagina ".$pageNumber."\n";
+                $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().", ".$aWork->getExposition()->getExpositionDate()->format('d/m/Y H:i')." hs, ".$aWork->getExposition()->getSite()."\t\t pagina ".$pageNumber."\n";
                 $pageNumber++;
             }
             $aService = new \Google_Service_Drive($aClient);
@@ -205,6 +198,31 @@ class WorkController extends Controller
     } 
 
     /**
+     * @Route("/schedule_work/{id}", name="schedule_work")
+     */
+    public function scheduler (Request $request, Work $aWork){
+        $response = new JsonResponse();
+        $responseData="";
+        /*
+        Un trabajo no puede ser asignado si ya posee un turno asignado o si todavia no termino de editarse su documento.
+        */
+        if (!$aWork->getExposition() && $aWork->getDocumentFinished()) {
+            $em = $this->getDoctrine()->getManager();
+            $expo = $em->getRepository('AppBundle:Exposition')->findOneByAvailable(true);
+            $aWork->setExposition( $expo );
+            $expo->setAvailable(false);
+            $em->flush();   
+            $responseData = array('site' => $expo->getSite(), 'exposition_date' => 'El '.$expo->getExpositionDate()->format('d/m/Y').' a las '.$expo->getExpositionDate()->format('H:i').' hs.' );
+        }
+        else {
+            $responseData = array ('error' => 'The Work Already has an Exposition Assigned');
+        }
+        $response->setData($responseData); 
+        $response->setEncodingOptions(JSON_UNESCAPED_SLASHES);     
+        return $response;
+    }
+
+    /**
      * @Route("/save_token", name="save_token")
      */
     public function saveTokenAction (Request $request) {
@@ -221,18 +239,9 @@ class WorkController extends Controller
                 file_put_contents(REFRESH_TOKEN_PATH, $accessToken["refresh_token"]); 
             }
         }
+
         return new Response('Token Creado', Response::HTTP_OK, array('content-type' => 'text/html'));
     }
 	
-	/**
-     * @Route("/ScheduleWork/{id}", name="ScheduleWork")
-     */
-	public function scheduler (Request $request, Work $aWork){
-		$em = $this->getDoctrine()->getManager();
-		$expo = $em->getRepository('AppBundle:Exposition')->findOneByAvailable(1);
-		$aWork->setExposition( $expo );
-		$em->flush();
-		return new Response('Exposition Assigned Succesfully', Response::HTTP_OK, array('content-type' => 'text/html') );
-	}
 
 }
