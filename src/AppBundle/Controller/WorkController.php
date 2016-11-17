@@ -18,6 +18,7 @@ use AppBundle\Entity\Work;
 use AppBundle\Form\WorkType;
 
 define ('CREDENTIALS_PATH', __DIR__.'/credentials/token.json');
+define ('REFRESH_TOKEN_PATH', __DIR__.'/credentials/refresh_token');
 define ('CLIENT_SECRET_PATH', __DIR__.'/credentials/client_secret.json');
 define ('REDIRECT_URI', 'http://localhost:8000/save_token');
 define ('SCOPE', 'https://www.googleapis.com/auth/drive');
@@ -42,7 +43,8 @@ class WorkController extends Controller
         $accessToken = json_decode(file_get_contents(CREDENTIALS_PATH),true);
         $client->setAccessToken($accessToken);
         if ($client->isAccessTokenExpired()) {
-            $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
+            $refresh_token = file_get_contents(REFRESH_TOKEN_PATH);
+            $client->fetchAccessTokenWithRefreshToken($refresh_token);
             file_put_contents(CREDENTIALS_PATH, json_encode($client->getAccessToken()));
         }
     }
@@ -214,7 +216,8 @@ class WorkController extends Controller
             else {
                 $code = $request->get('code');
                 $accessToken =$client->fetchAccessTokenWithAuthCode($code);
-                file_put_contents(CREDENTIALS_PATH, json_encode($accessToken)); 
+                file_put_contents(CREDENTIALS_PATH, json_encode($accessToken));
+                file_put_contents(REFRESH_TOKEN_PATH, $accessToken["refresh_token"]); 
             }
         }
         return new Response('Token Creado', Response::HTTP_OK, array('content-type' => 'text/html'));
