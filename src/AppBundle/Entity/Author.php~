@@ -3,6 +3,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Author
@@ -24,6 +25,7 @@ class Author
     /**
      * @var string
      *
+     * @Assert\NotBlank()
      * @ORM\Column(name="name", type="string", length=255)
      */
     private $name;
@@ -68,5 +70,28 @@ class Author
     {
         return $this->name;
     }
-}
 
+    /**
+     * Set work
+     *
+     * @param \AppBundle\Entity\Work $work
+     *
+     * @return Author
+     */
+    public function setWork(\AppBundle\Entity\Work $work = null)
+    {
+        $this->work = $work;
+
+        return $this;
+    }
+
+    /**
+     * Get work
+     *
+     * @return \AppBundle\Entity\Work
+     */
+    public function getWork()
+    {
+        return $this->work;
+    }
+}

@@ -15,6 +15,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use \Doctrine\Common\Collections\ArrayCollection;
 
 use AppBundle\Entity\Work;
+use AppBundle\Entity\Exposition;
 use AppBundle\Form\WorkType;
 
 define ('CREDENTIALS_PATH', __DIR__.'/credentials/token.json');
@@ -222,5 +223,15 @@ class WorkController extends Controller
         }
         return new Response('Token Creado', Response::HTTP_OK, array('content-type' => 'text/html'));
     }
+	
+	/**
+     * @Route("/ScheduleWork/{id}", name="ScheduleWork")
+     */
+	public function scheduler (Request $request, Work $aWork){
+		$em = $this->getDoctrine()->getManager();
+		$expo = $em->getRepository('AppBundle:Exposition')->findOneByAvailable(1);
+		$aWork->setExposition($expo->getId());
+		$em->flush();
+	}
 
 }
