@@ -230,8 +230,9 @@ class WorkController extends Controller
 	public function scheduler (Request $request, Work $aWork){
 		$em = $this->getDoctrine()->getManager();
 		$expo = $em->getRepository('AppBundle:Exposition')->findOneByAvailable(1);
-		$aWork->setExposition($expo->getId());
+		$aWork->setExposition( $expo );
 		$em->flush();
+		return new Response('Exposition Assigned Succesfully', Response::HTTP_OK, array('content-type' => 'text/html') );
 	}
 
 }
