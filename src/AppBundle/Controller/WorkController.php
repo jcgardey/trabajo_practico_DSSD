@@ -14,6 +14,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 use \Doctrine\Common\Collections\ArrayCollection;
 
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
 use AppBundle\Entity\Work;
 use AppBundle\Entity\Exposition;
 use AppBundle\Form\WorkType;
@@ -177,9 +179,11 @@ class WorkController extends Controller
         else {
             $worksApproved = $worksRepository->findAllApprovedByNumber();
             $pageNumber = 1;
-            $summaryIndex = "";
+            $summaryIndex = "TRABAJOS DEL CONGRESO DSSD 2016 \n\n\n";
             foreach ($worksApproved as $aWork) {
-                $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().", ".$aWork->getExposition()->getExpositionDate()->format('d/m/Y H:i')." hs, ".$aWork->getExposition()->getSite()."\t\t pagina ".$pageNumber."\n";
+                $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().', '.
+                $aWork->getExposition()->getExpositionDate()->format('d/m/Y H:i')." hs, ".$aWork->getExposition()->getSite().
+                ".\t Página ".$pageNumber."\n\n";
                 $pageNumber++;
             }
             $aService = new \Google_Service_Drive($aClient);
@@ -187,10 +191,10 @@ class WorkController extends Controller
             $driveFile->setName('libroCongreso.doc');
             $driveFile->setMimeType('application/vnd.google-apps.document');
             $createdFile = $aService->files->create($driveFile, array('data' => $summaryIndex,'mimeType' => 'application/vnd.google-apps.document'));
-        
+            
+            $exportFileLink = $this->generateUrl('export_file',array('id' => $createdFile->getId()),UrlGeneratorInterface::ABSOLUTE_URL);
+            $response->setData(array('book_link' => $exportFileLink));
 
-            $fileLink = $this->getFileLink($aService, $createdFile->getId());
-            $response->setData(array('book_link' => $fileLink));
         }
         $response->setEncodingOptions(JSON_UNESCAPED_SLASHES);
         return $response; 
@@ -220,6 +224,23 @@ class WorkController extends Controller
         $response->setData($responseData); 
         $response->setEncodingOptions(JSON_UNESCAPED_SLASHES);     
         return $response;
+    }
+
+
+    /**
+     * @Route("/export_file/{id}", name= "export_file")  
+     */
+    public function exportFileAction (Request $request, $id) {
+        $client = $this->getClient();
+        $this->loadToken($client);
+
+        $driveService = new \Google_Service_Drive($client);
+
+        $response = $driveService->files->export($id, 'application/pdf', array('alt' => 'media'));
+
+        $fileContent = $response->getBody()->getContents();
+
+        return new Response($fileContent,200, array('Content-Type' => 'application/pdf', 'Content-Disposition' => 'attachment;filename="libroCongreso.pdf"'));
     }
 
     /**
