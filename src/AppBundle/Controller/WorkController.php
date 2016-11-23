@@ -38,10 +38,10 @@ class WorkController extends Controller
         return $client;
     }
 
-    /*
-        Carga el token desde el archivo indicado por la constante CREDENTIALS_PATH, en caso de que el token
-        haya expirado, crea uno nuevo y lo actualiza en el archivo.
-    */
+    /**
+     *   Carga el token desde el archivo indicado por la constante CREDENTIALS_PATH, en caso de que el token
+     *  haya expirado, crea uno nuevo y lo actualiza en el archivo.
+     */
     private function loadToken ($client) {
         $accessToken = json_decode(file_get_contents(CREDENTIALS_PATH),true);
         $client->setAccessToken($accessToken);
@@ -80,6 +80,9 @@ class WorkController extends Controller
         return $this->render('work/new_work.html.twig',array('form' => $form->createView() ));  
     }
 
+    /**
+     * Crea un archivo nuevo en Google Drive y lo comparte con la dirección de Gmail asociada al trabajo.
+     */
     private function createFile ($drive_service, $aWork) {
         $driveFile = new \Google_Service_Drive_DriveFile();
         $driveFile->setName($aWork->getTitle().'_'.$aWork->getNumber().'.doc');
@@ -95,6 +98,9 @@ class WorkController extends Controller
         return $createdFile;
     }
 
+    /**
+     * A partir de un Id de archivo, retorna la URL del mismo para poder editarlo.
+     */
     private function getFileLink($drive_service, $id_file) {
         $drive_file = $drive_service->files->get($id_file, array('fields' => 'webViewLink'));
         return $drive_file->getWebViewLink();
@@ -102,6 +108,10 @@ class WorkController extends Controller
 
 
     /**
+     * Web Service que crea un documento en Google Drive para un trabajo.
+     * Para crear un documento a un trabajo es necesario que ese trabajo esté aprobado y que no posea
+     * un documento asociado ya.
+     *
      * @Route("/crear_archivo/{id}", name="crear_archivo")
      */
     public function crearArchivoDeTrabajoAction (Request $request, Work $aWork) {
@@ -138,6 +148,10 @@ class WorkController extends Controller
     }
 
     /**
+     * Determina la finalización de la edición del documento enviado por parámetro en la URL.
+     * Para terminar el documento de un trabajo es necesario que previamente tenga asociado un documento
+     * para lo cual debió ser aprobado antes.  
+     *
      * @Route("/end_edit/{id}", name="end_edit")
      */
     public function endEditAction (Request $request, Work $aWork) {
@@ -163,6 +177,10 @@ class WorkController extends Controller
 
 
     /**
+     * Genera el documento que representa el Libro del Congreso. 
+     * Para generar el documento es necesario que todos los trabajos que han sido aprobados tengan terminado
+     * su documento y que además ya hayan sido programados para ser expuestos.
+     *
      * @Route("/build_summary", name="build_summary")
      */
     public function buildSummaryAction (Request $request) {
@@ -179,7 +197,7 @@ class WorkController extends Controller
         else {
             $worksApproved = $worksRepository->findAllApprovedByNumber();
             $pageNumber = 1;
-            $summaryIndex = "TRABAJOS DEL CONGRESO DSSD 2016 \n\n\n";
+            $summaryIndex = "TRABAJOS DEL CONGRESO DE TECNOLOGÍA E INFORMÁTICA CLOUD & BPM 2016 \n\n\n";
             foreach ($worksApproved as $aWork) {
                 $summaryIndex = $summaryIndex.$aWork->getAuthor().", ".$aWork->getTitle().', '.
                 $aWork->getExposition()->getExpositionDate()->format('d/m/Y H:i')." hs, ".$aWork->getExposition()->getSite().
@@ -202,14 +220,16 @@ class WorkController extends Controller
     } 
 
     /**
+     * Web Service que asigna a un trabajo una fecha, hora y lugar de exposición. Para esto ya se dispone en la base de datos
+     * un conjunto de posibles horarios y lugares que pueden ser asignados. Cada fecha, hora y lugar disponible, puede ser asignado
+     * únicamente a un trabajo.
+     * Es necesario que un trabajo tenga su documento terminado para ser programado.
+     * 
      * @Route("/schedule_work/{id}", name="schedule_work")
      */
-    public function scheduler (Request $request, Work $aWork){
+    public function scheduleWorkAction (Request $request, Work $aWork){
         $response = new JsonResponse();
         $responseData="";
-        /*
-        Un trabajo no puede ser asignado si ya posee un turno asignado o si todavia no termino de editarse su documento.
-        */
         if (!$aWork->getExposition() && $aWork->getDocumentFinished()) {
             $em = $this->getDoctrine()->getManager();
             $expo = $em->getRepository('AppBundle:Exposition')->findOneByAvailable(true);
@@ -228,6 +248,8 @@ class WorkController extends Controller
 
 
     /**
+     * Exporta a formato PDF el archivo que tiene como ID el enviado por parámetro. 
+     * Este Web Service, se utiliza para generar el Libro del Congreso.  
      * @Route("/export_file/{id}", name= "export_file")  
      */
     public function exportFileAction (Request $request, $id) {
@@ -244,6 +266,9 @@ class WorkController extends Controller
     }
 
     /**
+     * NO SE DEBE UTILIZAR
+     * Solo es utilizado para generar un nuevo token de acceso a la API de Google Drive cuando hay conflictos
+     * con el token existente.
      * @Route("/save_token", name="save_token")
      */
     public function saveTokenAction (Request $request) {
